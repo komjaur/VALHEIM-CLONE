@@ -56,5 +56,5 @@
         "temp/": true,
         "Temp/": true
     },
-    "dotnet.defaultSolution": "VALHEIM CLONE.sln"
+    "dotnet.defaultSolution": "VALHEIM-CLONE.sln"
 }
