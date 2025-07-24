@@ -14,7 +14,7 @@ namespace EndlessWorld
         /* -------------------------------------------------------- */
         public void Build(int size, float spacing, float noiseScale, float heightMult,
                           float sandT, float stoneT, Material mat,
-                          SpawnRule[] objectRules, Vector2Int coord)
+                          Vector2Int coord)
         {
             /* build / refresh */
             if (_mf.sharedMesh == null || _mf.sharedMesh.vertexCount != size * size)
@@ -30,9 +30,6 @@ namespace EndlessWorld
             gameObject.name    = $"Chunk {coord.x},{coord.y}";
             GetComponent<MeshRenderer>().sharedMaterial = mat;
 
-            /* spawn objects if component present */
-            GetComponent<TerrainObjectSpawner>()?.Initialize(
-                size, spacing, noiseScale, heightMult, coord, objectRules);
         }
 
         /* ------------------ helpers ------------------ */
