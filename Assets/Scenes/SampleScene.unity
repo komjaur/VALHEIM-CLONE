@@ -468,7 +468,6 @@ MonoBehaviour:
   sandHeight: 0.35
   stoneHeight: 0.75
   textureTiling: 8
-  addColliders: 1
 --- !u!114 &973953751
 MonoBehaviour:
   m_ObjectHideFlags: 0

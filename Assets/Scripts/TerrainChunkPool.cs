@@ -9,7 +9,7 @@ namespace EndlessWorld
 
         public TerrainChunk Get(int size, float spacing, float noiseScale,
                                 float heightMult, float sandT, float stoneT,
-                                Material mat, Vector2Int coord, bool withCollider)
+                                Material mat, Vector2Int coord)
         {
             TerrainChunk tc = _pool.Count > 0
                               ? _pool.Pop()
@@ -17,7 +17,7 @@ namespace EndlessWorld
 
             tc.transform.parent = transform;
             tc.Build(size, spacing, noiseScale, heightMult,
-                     sandT, stoneT, mat, coord, withCollider);
+                     sandT, stoneT, mat, coord);
 
             tc.gameObject.SetActive(true);
             return tc;
