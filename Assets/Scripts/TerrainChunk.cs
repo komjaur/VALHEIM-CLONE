@@ -6,28 +6,15 @@ namespace EndlessWorld
     public class TerrainChunk : MonoBehaviour
     {
          MeshFilter   _mf;
-        MeshCollider _mc;
         static int   _seed = 12345;
 
         void Awake()
         {
             _mf = GetComponent<MeshFilter>();
-            _mc = GetComponent<MeshCollider>();
-            if (!_mc) _mc = gameObject.AddComponent<MeshCollider>();
-
-            /* ▼▼  obsolete flag removed  ▼▼ */
-#if UNITY_2019_3_OR_NEWER
-            _mc.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation;
-#else
-            _mc.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation
-                               | MeshColliderCookingOptions.InflateConvexMesh;
-#endif
         }
 
-        /* 9-parameter Build (unchanged apart from signature comment) */
         public void Build(int size, float spacing, float noiseScale, float heightMult,
-                          float sandT, float stoneT, Material mat, Vector2Int coord,
-                          bool withCollider)
+                          float sandT, float stoneT, Material mat, Vector2Int coord)
         {
             if (_mf.sharedMesh == null || _mf.sharedMesh.vertexCount != size * size)
                 _mf.sharedMesh = GenerateFlatGrid(size, spacing);
@@ -40,18 +27,6 @@ namespace EndlessWorld
             transform.position = new Vector3(coord.x * w, 0, coord.y * w);
             gameObject.name    = $"Chunk {coord.x},{coord.y}";
             GetComponent<MeshRenderer>().sharedMaterial = mat;
-
-            /* collider sync */
-            if (withCollider)
-            {
-                _mc.sharedMesh = null;
-                _mc.sharedMesh = _mf.sharedMesh;
-                _mc.enabled    = true;
-            }
-            else
-            {
-                _mc.enabled = false;
-            }
         }
 
    

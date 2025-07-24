@@ -26,10 +26,6 @@ namespace EndlessWorld
         [Range(0f,1f)] public float stoneHeight = 0.75f;
         public float textureTiling = 8f;
 
-        /* -------- Physics -------- */
-        [Header("Physics")]
-        public bool addColliders = true;     // <-- NEW
-
         /* -------- internals -------- */
         readonly Dictionary<Vector2Int,TerrainChunk> _loaded = new();
         TerrainChunkPool _pool;
@@ -64,7 +60,7 @@ namespace EndlessWorld
                     chunkSize, vertexSpacing,
                     noiseScale, heightMultiplier,
                     sandHeight, stoneHeight,
-                    _sharedMat, c, addColliders);    // <-- pass flag
+                    _sharedMat, c);
                 _loaded.Add(c, tc);
             }
 
