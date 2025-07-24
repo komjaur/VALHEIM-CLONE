@@ -1,81 +1,61 @@
+// TerrainObjectSpawner.cs
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 namespace EndlessWorld
 {
-    [System.Serializable]
-    public class SpawnRule
-    {
-        public GameObject prefab;
-        [Range(0f, 1f)] public float minHeight = 0f;
-        [Range(0f, 1f)] public float maxHeight = 1f;
-        [Range(0f, 1f)] public float density   = 0.1f;
-    }
-
-    /// <summary>
-    /// Spawns objects on terrain chunks based on height thresholds.
-    /// </summary>
+    /// <summary>Light-weight scatterer; attaches itself to the same GO as TerrainChunk.</summary>
+    [RequireComponent(typeof(TerrainChunk))]
     public class TerrainObjectSpawner : MonoBehaviour
     {
-        SpawnRule[] _rules;
+        readonly System.Collections.Generic.List<Transform> _spawned = new();
 
-        int _size;
-        float _spacing;
-        float _noiseScale;
-        float _heightMult;
-        Vector2Int _coord;
-
-        static int _seed = 12345; // must match TerrainChunk
-
-        public void Initialize(int size, float spacing, float noiseScale,
-                               float heightMult, Vector2Int coord,
-                               SpawnRule[] rules)
+        /// <remarks>
+        ///  Called from TerrainChunk.Build every time the chunk is (re)used.
+        ///  We *re-scatter* because vertex heights can change with a different coord.
+        /// </remarks>
+        public void Initialize(int size, float spacing,
+                               float noiseScale, float heightMult,
+                               Vector2Int coord, SpawnRule[] rules)
         {
-            _size       = size;
-            _spacing    = spacing;
-            _noiseScale = noiseScale;
-            _heightMult = heightMult;
-            _coord      = coord;
-            _rules      = rules;
+            // wipe previous instances from the pool reuse cycle
+            foreach (var t in _spawned) if (t) Destroy(t.gameObject);
+            _spawned.Clear();
 
-            ClearObjects();
-            SpawnObjects();
-        }
+            if (rules == null || rules.Length == 0) return;
 
-        void ClearObjects()
-        {
-            foreach (Transform child in transform)
-                Destroy(child.gameObject);
-        }
+            float worldW = (size - 1) * spacing;
+            float area    = worldW * worldW;
 
-        void SpawnObjects()
-        {
-            if (_rules == null) return;
-
-            float world = (_size - 1) * _spacing;
-
-            foreach (var rule in _rules)
+            // Probability approach: pick N tries based on the rule’s density × area.
+            foreach (var r in rules)
             {
-                if (!rule.prefab) continue;
+                if (!r.prefab || r.density <= 0f) continue;
 
-                int attempts = Mathf.RoundToInt(rule.density * _size * _size);
-
-                for (int i = 0; i < attempts; i++)
+                int target = Mathf.CeilToInt(r.density * area);
+                for (int i = 0; i < target; i++)
                 {
-                    float x  = Random.Range(0f, world);
-                    float z  = Random.Range(0f, world);
-                    float wx = _coord.x * world + x;
-                    float wz = _coord.y * world + z;
+                    // random point in the chunk
+                    float localX = Random.value * worldW;
+                    float localZ = Random.value * worldW;
 
-                    float h01 = Mathf.PerlinNoise((wx + _seed) / _noiseScale,
-                                                  (wz + _seed) / _noiseScale);
+                    float wx = coord.x * worldW + localX;
+                    float wz = coord.y * worldW + localZ;
 
-                    if (h01 < rule.minHeight || h01 > rule.maxHeight)
-                        continue;
+                    // Same height function we used for the mesh
+                    float h01 = Mathf.PerlinNoise((wx + 12345) / noiseScale,
+                                                  (wz + 12345) / noiseScale);
+                    if (!r.HeightOK(h01)) continue;
 
-                    float h   = h01 * _heightMult;
-                    Vector3 pos = new Vector3(x, h, z) + transform.position;
+                    float y = h01 * heightMult + Random.Range(r.yRandom.x, r.yRandom.y);
+                    Vector3 pos = new(wx, y, wz);
 
-                    Instantiate(rule.prefab, pos, Quaternion.identity, transform);
+                    // Optional little rotation for variety
+                    Quaternion rot = Quaternion.Euler(0, Random.value * 360f, 0);
+
+                    // Parent under the chunk so despawning works automatically
+                    Transform inst = Instantiate(r.prefab, pos, rot, transform).transform;
+                    _spawned.Add(inst);
                 }
             }
         }

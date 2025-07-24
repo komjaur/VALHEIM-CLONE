@@ -1,0 +1,30 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0d9d1c24e8e54e9db3b41c4587fa7288, type: 3}
+  m_Name: New World Settings
+  m_EditorClassIdentifier: 
+  chunkSize: 241
+  vertexSpacing: 1
+  noiseScale: 60
+  heightMultiplier: 25
+  sandTex: {fileID: 2800000, guid: e51489a030e10a744a1aeb6e6f7f0d25, type: 3}
+  grassTex: {fileID: 2800000, guid: ce879af75ed2c674a85c83d352bcc06b, type: 3}
+  stoneTex: {fileID: 2800000, guid: a60e845f1f746e54d8822f49402277a4, type: 3}
+  sandHeight: 0.35
+  stoneHeight: 0.75
+  textureTiling: 8
+  spawnRules:
+  - prefab: {fileID: 9106756809638495900, guid: cbdfb6ba07ed3d440ae06a2d60fa3256, type: 3}
+    minH01: 0.328
+    maxH01: 1
+    density: 0.1
+    yRandom: {x: 0, y: 0}

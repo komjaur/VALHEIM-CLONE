@@ -458,16 +458,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   player: {fileID: 2108309496}
   viewDistance: 4
-  chunkSize: 241
-  vertexSpacing: 1
-  noiseScale: 60
-  heightMultiplier: 25
-  sandTex: {fileID: 2800000, guid: e51489a030e10a744a1aeb6e6f7f0d25, type: 3}
-  grassTex: {fileID: 2800000, guid: ce879af75ed2c674a85c83d352bcc06b, type: 3}
-  stoneTex: {fileID: 2800000, guid: a60e845f1f746e54d8822f49402277a4, type: 3}
-  sandHeight: 0.35
-  stoneHeight: 0.75
-  textureTiling: 8
+  world: {fileID: 0}
 --- !u!114 &973953751
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -503,6 +494,10 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5222740939418225544, guid: f2e0b7ae4dae8cf44955bccd3512b213, type: 3}
+      propertyPath: m_UseGravity
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5238820401998598406, guid: f2e0b7ae4dae8cf44955bccd3512b213, type: 3}
       propertyPath: m_LocalPosition.x
       value: 43.200836
@@ -546,6 +541,10 @@ PrefabInstance:
     - target: {fileID: 5241267463746980526, guid: f2e0b7ae4dae8cf44955bccd3512b213, type: 3}
       propertyPath: m_Name
       value: First Person Controller Minimal
+      objectReference: {fileID: 0}
+    - target: {fileID: 5241267463746980526, guid: f2e0b7ae4dae8cf44955bccd3512b213, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 5272657471857185710, guid: f2e0b7ae4dae8cf44955bccd3512b213, type: 3}
       propertyPath: isGrounded
