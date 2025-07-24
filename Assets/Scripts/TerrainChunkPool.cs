@@ -17,7 +17,7 @@ namespace EndlessWorld
 
             tc.transform.parent = transform;
             tc.Build(size, spacing, noiseScale, heightMult,
-                     sandT, stoneT, mat, coord);
+                     sandT, stoneT, mat, coord);   // 8-arg call
 
             tc.gameObject.SetActive(true);
             return tc;

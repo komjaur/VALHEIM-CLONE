@@ -33,7 +33,7 @@ namespace EndlessWorld
 
         void Start()
         {
-            _pool  = GetComponent<TerrainChunkPool>();
+            _pool = GetComponent<TerrainChunkPool>();
             if (!player)
                 player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
@@ -49,7 +49,7 @@ namespace EndlessWorld
             if (!player) return;
             Vector2Int pChunk = WorldToChunk(player.position);
 
-            /* Spawn window */
+            /* spawn window */
             for (int y=-viewDistance; y<=viewDistance; y++)
             for (int x=-viewDistance; x<=viewDistance; x++)
             {
@@ -60,11 +60,11 @@ namespace EndlessWorld
                     chunkSize, vertexSpacing,
                     noiseScale, heightMultiplier,
                     sandHeight, stoneHeight,
-                    _sharedMat, c);
+                    _sharedMat, c);           // 8-arg call
                 _loaded.Add(c, tc);
             }
 
-            /* Cull fringe */
+            /* despawn fringe */
             var toRemove = new List<Vector2Int>();
             foreach (var kv in _loaded)
             {
