@@ -28,6 +28,10 @@ namespace EndlessWorld
             transform.position = new Vector3(coord.x*w, 0, coord.y*w);
             gameObject.name    = $"Chunk {coord.x},{coord.y}";
             GetComponent<MeshRenderer>().sharedMaterial = mat;
+
+            /* spawn objects if component present */
+            GetComponent<TerrainObjectSpawner>()?.Initialize(
+                size, spacing, noiseScale, heightMult, coord);
         }
 
         /* ------------------ helpers ------------------ */
