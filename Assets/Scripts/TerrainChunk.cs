@@ -1,0 +1,115 @@
+using UnityEngine;
+
+namespace EndlessWorld
+{
+    [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
+    public class TerrainChunk : MonoBehaviour
+    {
+         MeshFilter   _mf;
+        MeshCollider _mc;
+        static int   _seed = 12345;
+
+        void Awake()
+        {
+            _mf = GetComponent<MeshFilter>();
+            _mc = GetComponent<MeshCollider>();
+            if (!_mc) _mc = gameObject.AddComponent<MeshCollider>();
+
+            /* ▼▼  obsolete flag removed  ▼▼ */
+#if UNITY_2019_3_OR_NEWER
+            _mc.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation;
+#else
+            _mc.cookingOptions = MeshColliderCookingOptions.CookForFasterSimulation
+                               | MeshColliderCookingOptions.InflateConvexMesh;
+#endif
+        }
+
+        /* 9-parameter Build (unchanged apart from signature comment) */
+        public void Build(int size, float spacing, float noiseScale, float heightMult,
+                          float sandT, float stoneT, Material mat, Vector2Int coord,
+                          bool withCollider)
+        {
+            if (_mf.sharedMesh == null || _mf.sharedMesh.vertexCount != size * size)
+                _mf.sharedMesh = GenerateFlatGrid(size, spacing);
+
+            ApplyHeightsAndColors(_mf.sharedMesh, size, spacing,
+                                  noiseScale, heightMult,
+                                  sandT, stoneT, coord);
+
+            float w = (size - 1) * spacing;
+            transform.position = new Vector3(coord.x * w, 0, coord.y * w);
+            gameObject.name    = $"Chunk {coord.x},{coord.y}";
+            GetComponent<MeshRenderer>().sharedMaterial = mat;
+
+            /* collider sync */
+            if (withCollider)
+            {
+                _mc.sharedMesh = null;
+                _mc.sharedMesh = _mf.sharedMesh;
+                _mc.enabled    = true;
+            }
+            else
+            {
+                _mc.enabled = false;
+            }
+        }
+
+   
+
+        /* ---------- mesh utilities (unchanged) ---------- */
+        static Mesh GenerateFlatGrid(int size, float spacing)
+        {
+            var v = new Vector3[size*size];
+            var u = new Vector2[v.Length];
+            var t = new int[(size-1)*(size-1)*6];
+
+            for (int y=0,i=0; y<size; y++)
+            for (int x=0; x<size; x++, i++)
+            {
+                v[i]=new Vector3(x*spacing,0,y*spacing);
+                u[i]=new Vector2((float)x/size,(float)y/size);
+            }
+
+            for (int y=0,ti=0,vi=0; y<size-1; y++,vi++)
+            for (int x=0; x<size-1; x++,ti+=6,vi++)
+            {
+                t[ti+0]=vi;
+                t[ti+1]=vi+size;
+                t[ti+2]=vi+1;
+                t[ti+3]=vi+1;
+                t[ti+4]=vi+size;
+                t[ti+5]=vi+size+1;
+            }
+
+            Mesh m=new(){vertices=v,triangles=t,uv=u};
+            m.RecalculateNormals();
+            return m;
+        }
+
+        static void ApplyHeightsAndColors(Mesh m, int size, float spacing,
+                                          float noiseScale, float heightMult,
+                                          float sandT, float stoneT, Vector2Int coord)
+        {
+            var v=m.vertices;
+            var c=m.colors==null||m.colors.Length!=v.Length?new Color[v.Length]:m.colors;
+            float world=(size-1)*spacing;
+
+            for(int y=0,i=0;y<size;y++)
+            for(int x=0;x<size;x++,i++)
+            {
+                float wx=coord.x*world+v[i].x;
+                float wz=coord.y*world+v[i].z;
+                float h01=Mathf.PerlinNoise((wx+_seed)/noiseScale,(wz+_seed)/noiseScale);
+                v[i].y=h01*heightMult;
+
+                float sel=h01<sandT?0f:h01<stoneT?0.5f:1f;
+                c[i]=new Color(0f,sel,0f,1f);
+            }
+
+            m.vertices=v;
+            m.colors=c;
+            m.RecalculateNormals();
+            m.RecalculateBounds();
+        }
+    }
+}
