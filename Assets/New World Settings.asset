@@ -22,9 +22,3 @@ MonoBehaviour:
   sandHeight: 0.35
   stoneHeight: 0.75
   textureTiling: 8
-  spawnRules:
-  - prefab: {fileID: 9106756809638495900, guid: cbdfb6ba07ed3d440ae06a2d60fa3256, type: 3}
-    minH01: 0.328
-    maxH01: 1
-    density: 0.1
-    yRandom: {x: 0, y: 0}

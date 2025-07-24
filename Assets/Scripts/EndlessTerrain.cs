@@ -50,7 +50,7 @@ namespace EndlessWorld
                     world.chunkSize, world.vertexSpacing,
                     world.noiseScale, world.heightMultiplier,
                     world.sandHeight, world.stoneHeight,
-                    _sharedMat, world.spawnRules,
+                    _sharedMat,
                     c);
                 _loaded.Add(c, tc);
             }

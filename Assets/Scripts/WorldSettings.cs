@@ -18,9 +18,6 @@ namespace EndlessWorld
         [Range(0f,1f)] public float sandHeight = 0.35f;
         [Range(0f,1f)] public float stoneHeight = 0.75f;
         public float textureTiling = 8f;
-        // WorldSettings.cs            (only the new bits shown)
-[Header("Object spawning")]
-public SpawnRule[] spawnRules;
 
     }
 }
