@@ -11,20 +11,8 @@ namespace EndlessWorld
         public Transform player;
         [Min(1)] public int viewDistance = 4;
 
-        [Header("Chunk Geometry")]
-        public int   chunkSize       = 241;
-        public float vertexSpacing   = 1f;
-        public float noiseScale      = 60f;
-        public float heightMultiplier = 25f;
-
-        /* -------- Biomes -------- */
-        [Header("Biome Textures & Thresholds")]
-        public Texture2D sandTex;
-        public Texture2D grassTex;
-        public Texture2D stoneTex;
-        [Range(0f,1f)] public float sandHeight  = 0.35f;
-        [Range(0f,1f)] public float stoneHeight = 0.75f;
-        public float textureTiling = 8f;
+        [Header("World Settings")]
+        public WorldSettings world;
 
         /* -------- internals -------- */
         readonly Dictionary<Vector2Int,TerrainChunk> _loaded = new();
@@ -37,16 +25,18 @@ namespace EndlessWorld
             if (!player)
                 player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
+            if (!world) return;
+
             _sharedMat = new Material(Shader.Find("EndlessWorld/HeightBlend"));
-            _sharedMat.SetTexture("_Sand",  sandTex);
-            _sharedMat.SetTexture("_Grass", grassTex);
-            _sharedMat.SetTexture("_Stone", stoneTex);
-            _sharedMat.SetFloat  ("_Tiling", textureTiling);
+            _sharedMat.SetTexture("_Sand",  world.sandTex);
+            _sharedMat.SetTexture("_Grass", world.grassTex);
+            _sharedMat.SetTexture("_Stone", world.stoneTex);
+            _sharedMat.SetFloat  ("_Tiling", world.textureTiling);
         }
 
         void Update()
         {
-            if (!player) return;
+            if (!player || !world) return;
             Vector2Int pChunk = WorldToChunk(player.position);
 
             /* spawn window */
@@ -57,10 +47,11 @@ namespace EndlessWorld
                 if (_loaded.ContainsKey(c)) continue;
 
                 TerrainChunk tc = _pool.Get(
-                    chunkSize, vertexSpacing,
-                    noiseScale, heightMultiplier,
-                    sandHeight, stoneHeight,
-                    _sharedMat, c);           // 8-arg call
+                    world.chunkSize, world.vertexSpacing,
+                    world.noiseScale, world.heightMultiplier,
+                    world.sandHeight, world.stoneHeight,
+                    _sharedMat, world.spawnRules,
+                    c);
                 _loaded.Add(c, tc);
             }
 
@@ -80,7 +71,7 @@ namespace EndlessWorld
 
         Vector2Int WorldToChunk(Vector3 pos)
         {
-            float chunkWorld = (chunkSize-1)*vertexSpacing;
+            float chunkWorld = (world.chunkSize-1)*world.vertexSpacing;
             return new Vector2Int(
                 Mathf.FloorToInt(pos.x / chunkWorld),
                 Mathf.FloorToInt(pos.z / chunkWorld));
