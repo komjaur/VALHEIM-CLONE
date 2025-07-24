@@ -13,10 +13,11 @@ namespace EndlessWorld
 
         /* -------------------------------------------------------- */
         public void Build(int size, float spacing, float noiseScale, float heightMult,
-                          float sandT, float stoneT, Material mat, Vector2Int coord)
+                          float sandT, float stoneT, Material mat,
+                          SpawnRule[] objectRules, Vector2Int coord)
         {
             /* build / refresh */
-            if (_mf.sharedMesh == null || _mf.sharedMesh.vertexCount != size*size)
+            if (_mf.sharedMesh == null || _mf.sharedMesh.vertexCount != size * size)
                 _mf.sharedMesh = GenerateFlatGrid(size, spacing);
 
             SculptHeightsAndColors(_mf.sharedMesh, size, spacing,
@@ -24,42 +25,42 @@ namespace EndlessWorld
                                    sandT, stoneT, coord);
 
             /* place & render */
-            float w = (size-1)*spacing;
-            transform.position = new Vector3(coord.x*w, 0, coord.y*w);
+            float w = (size - 1) * spacing;
+            transform.position = new Vector3(coord.x * w, 0, coord.y * w);
             gameObject.name    = $"Chunk {coord.x},{coord.y}";
             GetComponent<MeshRenderer>().sharedMaterial = mat;
 
             /* spawn objects if component present */
             GetComponent<TerrainObjectSpawner>()?.Initialize(
-                size, spacing, noiseScale, heightMult, coord);
+                size, spacing, noiseScale, heightMult, coord, objectRules);
         }
 
         /* ------------------ helpers ------------------ */
         static Mesh GenerateFlatGrid(int size, float spacing)
         {
-            var v = new Vector3[size*size];
+            var v = new Vector3[size * size];
             var u = new Vector2[v.Length];
-            var t = new int[(size-1)*(size-1)*6];
+            var t = new int[(size - 1) * (size - 1) * 6];
 
-            for (int y=0,i=0; y<size; y++)
-            for (int x=0; x<size; x++, i++)
+            for (int y = 0, i = 0; y < size; y++)
+            for (int x = 0; x < size; x++, i++)
             {
-                v[i] = new Vector3(x*spacing, 0, y*spacing);
-                u[i] = new Vector2((float)x/size, (float)y/size);
+                v[i] = new Vector3(x * spacing, 0, y * spacing);
+                u[i] = new Vector2((float)x / size, (float)y / size);
             }
 
-            for (int y=0,ti=0,vi=0; y<size-1; y++,vi++)
-            for (int x=0; x<size-1; x++,ti+=6,vi++)
+            for (int y = 0, ti = 0, vi = 0; y < size - 1; y++, vi++)
+            for (int x = 0; x < size - 1; x++, ti += 6, vi++)
             {
-                t[ti+0]=vi;
-                t[ti+1]=vi+size;
-                t[ti+2]=vi+1;
-                t[ti+3]=vi+1;
-                t[ti+4]=vi+size;
-                t[ti+5]=vi+size+1;
+                t[ti + 0] = vi;
+                t[ti + 1] = vi + size;
+                t[ti + 2] = vi + 1;
+                t[ti + 3] = vi + 1;
+                t[ti + 4] = vi + size;
+                t[ti + 5] = vi + size + 1;
             }
 
-            Mesh m = new(){vertices=v, triangles=t, uv=u};
+            Mesh m = new() { vertices = v, triangles = t, uv = u };
             m.RecalculateNormals();
             return m;
         }
@@ -69,19 +70,19 @@ namespace EndlessWorld
                                            float sandT, float stoneT, Vector2Int coord)
         {
             var v = m.vertices;
-            var c = m.colors==null||m.colors.Length!=v.Length
+            var c = m.colors == null || m.colors.Length != v.Length
                     ? new Color[v.Length] : m.colors;
 
-            float world = (size-1)*spacing;
+            float world = (size - 1) * spacing;
 
-            for (int y=0,i=0; y<size; y++)
-            for (int x=0; x<size; x++, i++)
+            for (int y = 0, i = 0; y < size; y++)
+            for (int x = 0; x < size; x++, i++)
             {
-                float wx = coord.x*world + v[i].x;
-                float wz = coord.y*world + v[i].z;
+                float wx = coord.x * world + v[i].x;
+                float wz = coord.y * world + v[i].z;
 
-                float h01 = Mathf.PerlinNoise((wx+_seed)/noiseScale,
-                                              (wz+_seed)/noiseScale);
+                float h01 = Mathf.PerlinNoise((wx + _seed) / noiseScale,
+                                              (wz + _seed) / noiseScale);
 
                 v[i].y = h01 * heightMult;
 
