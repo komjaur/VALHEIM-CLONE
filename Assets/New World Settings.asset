@@ -22,3 +22,7 @@ MonoBehaviour:
   sandHeight: 0.35
   stoneHeight: 0.75
   textureTiling: 8
+  treePrefab: {fileID: 0}
+  treeMinHeight: 0.4
+  treeMaxHeight: 0.7
+  treeDensity: 0.1

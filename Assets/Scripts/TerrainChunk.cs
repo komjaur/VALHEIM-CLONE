@@ -14,7 +14,9 @@ namespace EndlessWorld
         /* -------------------------------------------------------- */
         public void Build(int size, float spacing, float noiseScale, float heightMult,
                           float sandT, float stoneT, Material mat,
-                          Vector2Int coord)
+                          Vector2Int coord,
+                          GameObject treePrefab, float treeMinHeight,
+                          float treeMaxHeight, float treeDensity)
         {
             /* build / refresh */
             if (_mf.sharedMesh == null || _mf.sharedMesh.vertexCount != size * size)
@@ -23,6 +25,9 @@ namespace EndlessWorld
             SculptHeightsAndColors(_mf.sharedMesh, size, spacing,
                                    noiseScale, heightMult,
                                    sandT, stoneT, coord);
+
+            SpawnTrees(size, spacing, noiseScale, heightMult, coord,
+                       treePrefab, treeMinHeight, treeMaxHeight, treeDensity);
 
             /* place & render */
             float w = (size - 1) * spacing;
@@ -92,6 +97,42 @@ namespace EndlessWorld
             m.colors   = c;
             m.RecalculateNormals();
             m.RecalculateBounds();
+        }
+
+        void SpawnTrees(int size, float spacing, float noiseScale, float heightMult,
+                        Vector2Int coord, GameObject prefab, float minHeight,
+                        float maxHeight, float density)
+        {
+            if (!prefab || density <= 0f || maxHeight <= minHeight)
+                return;
+
+            Transform treeParent = transform.Find("Trees");
+            if (!treeParent)
+            {
+                treeParent = new GameObject("Trees").transform;
+                treeParent.parent = transform;
+                treeParent.localPosition = Vector3.zero;
+            }
+            for (int i = treeParent.childCount - 1; i >= 0; i--)
+                Destroy(treeParent.GetChild(i).gameObject);
+
+            float world = (size - 1) * spacing;
+
+            for (int y = 0; y < size; y++)
+            for (int x = 0; x < size; x++)
+            {
+                if (Random.value > density) continue;
+
+                float wx = coord.x * world + x * spacing;
+                float wz = coord.y * world + y * spacing;
+                float h01 = Mathf.PerlinNoise((wx + _seed) / noiseScale,
+                                              (wz + _seed) / noiseScale);
+                if (h01 < minHeight || h01 > maxHeight) continue;
+
+                float wy = h01 * heightMult;
+                Instantiate(prefab, new Vector3(wx, wy, wz), Quaternion.identity,
+                           treeParent);
+            }
         }
     }
 }
