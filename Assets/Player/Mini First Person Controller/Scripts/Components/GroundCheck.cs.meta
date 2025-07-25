@@ -1,7 +1,11 @@
 fileFormatVersion: 2
-guid: f2e0b7ae4dae8cf44955bccd3512b213
-PrefabImporter:
+guid: 084c01ab381b9da4082c1f84cf70751b
+MonoImporter:
   externalObjects: {}
+  serializedVersion: 2
+  defaultReferences: []
+  executionOrder: 0
+  icon: {instanceID: 0}
   userData: 
   assetBundleName: 
   assetBundleVariant: 
@@ -10,5 +14,5 @@ AssetOrigin:
   productId: 174710
   packageName: Mini First Person Controller
   packageVersion: 1.1.0
-  assetPath: Assets/Mini First Person Controller/First Person Controller Minimal.prefab
+  assetPath: Assets/Player/Mini First Person Controller/Scripts/Components/GroundCheck.cs
   uploadId: 442605
