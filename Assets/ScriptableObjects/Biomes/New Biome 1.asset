@@ -10,7 +10,7 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 297926620f554dbfa7984c484852a888, type: 3}
-  m_Name: New Biome 1
+  m_Name: Stone Biome
   m_EditorClassIdentifier: 
   minHeat: 0
   maxHeat: 1
@@ -23,4 +23,4 @@ MonoBehaviour:
   treeDensity: 0.1
   noiseScale: 60
   heightMultiplier: 25
-  texture: {fileID: 2800000, guid: e51489a030e10a744a1aeb6e6f7f0d25, type: 3}
+  texture: {fileID: 2800000, guid: a60e845f1f746e54d8822f49402277a4, type: 3}

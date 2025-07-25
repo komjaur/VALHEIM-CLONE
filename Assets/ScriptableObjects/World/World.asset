@@ -17,7 +17,8 @@ MonoBehaviour:
   heatNoiseScale: 100
   wetnessNoiseScale: 100
   biomes:
-  - {fileID: 0}
+  - {fileID: 11400000, guid: ef05d9366ff10ce48aa9ade2acc0bfbe, type: 2}
+  - {fileID: 11400000, guid: 50ba2d22d6fd6054abb5819569d3a94d, type: 2}
   textureTiling: 8
   waterHeight: 0
   waterColor: {r: 0, g: 0.5, b: 1, a: 0.5}
