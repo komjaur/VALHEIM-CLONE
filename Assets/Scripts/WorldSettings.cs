@@ -19,5 +19,11 @@ namespace EndlessWorld
         [Range(0f,1f)] public float stoneHeight = 0.75f;
         public float textureTiling = 8f;
 
+        [Header("Tree Settings")]
+        public GameObject treePrefab;
+        [Range(0f,1f)] public float treeMinHeight = 0.4f;
+        [Range(0f,1f)] public float treeMaxHeight = 0.7f;
+        [Range(0f,1f)] public float treeDensity = 0.1f;
+
     }
 }

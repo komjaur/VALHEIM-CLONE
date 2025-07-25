@@ -10,7 +10,9 @@ namespace EndlessWorld
         public TerrainChunk Get(int size, float spacing, float noiseScale,
                                 float heightMult, float sandT, float stoneT,
                                 Material mat,
-                                Vector2Int coord)
+                                Vector2Int coord,
+                                GameObject treePrefab, float treeMinHeight,
+                                float treeMaxHeight, float treeDensity)
         {
             TerrainChunk tc = _pool.Count > 0
                               ? _pool.Pop()
@@ -18,7 +20,8 @@ namespace EndlessWorld
 
             tc.transform.parent = transform;
             tc.Build(size, spacing, noiseScale, heightMult,
-                     sandT, stoneT, mat, coord);
+                     sandT, stoneT, mat, coord,
+                     treePrefab, treeMinHeight, treeMaxHeight, treeDensity);
 
             tc.gameObject.SetActive(true);
             return tc;

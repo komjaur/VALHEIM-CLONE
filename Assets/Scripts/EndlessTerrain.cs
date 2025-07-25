@@ -51,7 +51,9 @@ namespace EndlessWorld
                     world.noiseScale, world.heightMultiplier,
                     world.sandHeight, world.stoneHeight,
                     _sharedMat,
-                    c);
+                    c,
+                    world.treePrefab, world.treeMinHeight,
+                    world.treeMaxHeight, world.treeDensity);
                 _loaded.Add(c, tc);
             }
 
