@@ -34,6 +34,8 @@ namespace EndlessWorld
                 var mat = new Material(Shader.Find("EndlessWorld/HeightBlend"));
                 if (b.texture) mat.SetTexture("_MainTex", b.texture);
                 mat.SetFloat("_Tiling", world.textureTiling);
+                float chunkWorldSize = (world.chunkSize - 1) * world.vertexSpacing;
+                mat.SetFloat("_ChunkSize", chunkWorldSize);
                 _biomeMats[b] = mat;
             }
 
