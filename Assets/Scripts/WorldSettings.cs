@@ -16,11 +16,8 @@ namespace EndlessWorld
         public Biome[] biomes;
 
 
-        [Header("Tree Settings")]
-        public GameObject treePrefab;
-        [Range(0f,1f)] public float treeMinHeight = 0.4f;
-        [Range(0f,1f)] public float treeMaxHeight = 0.7f;
-        [Range(0f,1f)] public float treeDensity = 0.1f;
+        [Header("Texture Settings")]
+        public float textureTiling = 8f;
 
         [Header("Water Settings")]
         public float waterHeight = 0f;
