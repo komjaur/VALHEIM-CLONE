@@ -56,8 +56,7 @@ namespace EndlessWorld
                     world.sandHeight, world.stoneHeight,
                     _sharedMat,
                     c,
-                    world.treePrefab, world.treeMinHeight,
-                    world.treeMaxHeight, world.treeDensity,
+                    world.heatNoiseScale, world.wetnessNoiseScale, world.biomes,
                     world.waterHeight, _waterMat,
                     transform);
 

@@ -11,6 +11,11 @@ namespace EndlessWorld
         public float noiseScale = 60f;
         public float heightMultiplier = 25f;
 
+        [Header("Biome Generation")]
+        public float heatNoiseScale = 100f;
+        public float wetnessNoiseScale = 100f;
+        public Biome[] biomes;
+
         [Header("Biome Textures & Thresholds")]
         public Texture2D sandTex;
         public Texture2D grassTex;
