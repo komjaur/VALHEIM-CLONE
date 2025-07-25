@@ -19,7 +19,7 @@ namespace EndlessWorld
 
         /* -------------------------------------------------------- */
         public void Build(int size, float spacing, float noiseScale, float heightMult,
-                          float sandT, float stoneT, Material mat,
+                          Material mat,
                           Vector2Int coord,
                           float heatScale, float wetScale, Biome[] biomes,
                           float waterHeight, Material waterMat)
@@ -30,7 +30,7 @@ namespace EndlessWorld
 
             SculptHeightsAndColors(_mf.sharedMesh, size, spacing,
                                    noiseScale, heightMult,
-                                   sandT, stoneT, coord,
+                                   coord,
                                    heatScale, wetScale, biomes);
 
             /* place & render */
@@ -109,7 +109,7 @@ namespace EndlessWorld
 
         static void SculptHeightsAndColors(Mesh m, int size, float spacing,
                                            float noiseScale, float heightMult,
-                                           float sandT, float stoneT, Vector2Int coord,
+                                           Vector2Int coord,
                                            float heatScale, float wetScale, Biome[] biomes)
         {
             var v = m.vertices;

@@ -18,9 +18,6 @@ MonoBehaviour:
   wetnessNoiseScale: 100
   biomes:
   - {fileID: 0}
-  treePrefab: {fileID: 0}
-  treeMinHeight: 0.4
-  treeMaxHeight: 0.7
-  treeDensity: 0.1
+  textureTiling: 8
   waterHeight: 0
   waterColor: {r: 0, g: 0.5, b: 1, a: 0.5}

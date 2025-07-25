@@ -23,9 +23,4 @@ MonoBehaviour:
   treeDensity: 0.1
   noiseScale: 60
   heightMultiplier: 25
-  sandTex: {fileID: 2800000, guid: e51489a030e10a744a1aeb6e6f7f0d25, type: 3}
-  grassTex: {fileID: 2800000, guid: ce879af75ed2c674a85c83d352bcc06b, type: 3}
-  stoneTex: {fileID: 2800000, guid: a60e845f1f746e54d8822f49402277a4, type: 3}
-  sandHeight: 0.35
-  stoneHeight: 0.75
-  textureTiling: 8
+  texture: {fileID: 2800000, guid: e51489a030e10a744a1aeb6e6f7f0d25, type: 3}

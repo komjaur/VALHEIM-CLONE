@@ -32,10 +32,8 @@ namespace EndlessWorld
             foreach (var b in world.biomes)
             {
                 var mat = new Material(Shader.Find("EndlessWorld/HeightBlend"));
-                if (b.sandTex)  mat.SetTexture("_Sand",  b.sandTex);
-                if (b.grassTex) mat.SetTexture("_Grass", b.grassTex);
-                if (b.stoneTex) mat.SetTexture("_Stone", b.stoneTex);
-                mat.SetFloat("_Tiling", b.textureTiling);
+                if (b.texture) mat.SetTexture("_MainTex", b.texture);
+                mat.SetFloat("_Tiling", world.textureTiling);
                 _biomeMats[b] = mat;
             }
 
@@ -64,8 +62,6 @@ namespace EndlessWorld
                     world.chunkSize, world.vertexSpacing,
                     biome != null ? biome.noiseScale : 60f,
                     biome != null ? biome.heightMultiplier : 25f,
-                    biome != null ? biome.sandHeight : 0.35f,
-                    biome != null ? biome.stoneHeight : 0.75f,
                     mat,
                     c,
                     world.heatNoiseScale, world.wetnessNoiseScale, world.biomes,

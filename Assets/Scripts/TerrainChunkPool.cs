@@ -8,8 +8,7 @@ namespace EndlessWorld
         readonly Stack<TerrainChunk> _pool = new();
 
         public TerrainChunk Get(int size, float spacing, float noiseScale,
-                                float heightMult, float sandT, float stoneT,
-                                Material mat,
+                                float heightMult, Material mat,
                                 Vector2Int coord,
                                 float heatScale, float wetScale, Biome[] biomes,
                                 float waterHeight, Material waterMat,
@@ -21,7 +20,7 @@ namespace EndlessWorld
 
             tc.transform.parent = parent ? parent : transform;
             tc.Build(size, spacing, noiseScale, heightMult,
-                     sandT, stoneT, mat, coord,
+                     mat, coord,
                      heatScale, wetScale, biomes,
                      waterHeight, waterMat);
 
