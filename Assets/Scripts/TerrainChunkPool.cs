@@ -11,8 +11,7 @@ namespace EndlessWorld
                                 float heightMult, float sandT, float stoneT,
                                 Material mat,
                                 Vector2Int coord,
-                                GameObject treePrefab, float treeMinHeight,
-                                float treeMaxHeight, float treeDensity,
+                                float heatScale, float wetScale, Biome[] biomes,
                                 float waterHeight, Material waterMat,
                                 Transform parent = null)
         {
@@ -23,7 +22,7 @@ namespace EndlessWorld
             tc.transform.parent = parent ? parent : transform;
             tc.Build(size, spacing, noiseScale, heightMult,
                      sandT, stoneT, mat, coord,
-                     treePrefab, treeMinHeight, treeMaxHeight, treeDensity,
+                     heatScale, wetScale, biomes,
                      waterHeight, waterMat);
 
             tc.gameObject.SetActive(true);

@@ -21,8 +21,7 @@ namespace EndlessWorld
         public void Build(int size, float spacing, float noiseScale, float heightMult,
                           float sandT, float stoneT, Material mat,
                           Vector2Int coord,
-                          GameObject treePrefab, float treeMinHeight,
-                          float treeMaxHeight, float treeDensity,
+                          float heatScale, float wetScale, Biome[] biomes,
                           float waterHeight, Material waterMat)
         {
             /* build / refresh */
@@ -31,7 +30,8 @@ namespace EndlessWorld
 
             SculptHeightsAndColors(_mf.sharedMesh, size, spacing,
                                    noiseScale, heightMult,
-                                   sandT, stoneT, coord);
+                                   sandT, stoneT, coord,
+                                   heatScale, wetScale, biomes);
 
             /* place & render */
             float w = (size - 1) * spacing;
@@ -47,7 +47,7 @@ namespace EndlessWorld
             _waterMr.sharedMaterial = waterMat;
 
             SpawnTrees(size, spacing, noiseScale, heightMult, coord,
-                       treePrefab, treeMinHeight, treeMaxHeight, treeDensity);
+                       heatScale, wetScale, biomes);
 
         }
 
@@ -101,7 +101,8 @@ namespace EndlessWorld
 
         static void SculptHeightsAndColors(Mesh m, int size, float spacing,
                                            float noiseScale, float heightMult,
-                                           float sandT, float stoneT, Vector2Int coord)
+                                           float sandT, float stoneT, Vector2Int coord,
+                                           float heatScale, float wetScale, Biome[] biomes)
         {
             var v = m.vertices;
             var c = m.colors == null || m.colors.Length != v.Length
@@ -118,11 +119,27 @@ namespace EndlessWorld
                 float h01 = Mathf.PerlinNoise((wx + _seed) / noiseScale,
                                               (wz + _seed) / noiseScale);
 
+                float heat = Mathf.PerlinNoise((wx + _seed*2) / heatScale,
+                                               (wz + _seed*2) / heatScale);
+                float wet  = Mathf.PerlinNoise((wx + _seed*3) / wetScale,
+                                               (wz + _seed*3) / wetScale);
+
                 v[i].y = h01 * heightMult;
 
-                float sel = h01 < sandT  ? 0f :
-                            h01 < stoneT ? 0.5f : 1f;
-                c[i] = new Color(0f, sel, 0f, 1f);
+                Color col = Color.black;
+                if (biomes != null)
+                {
+                    foreach (var b in biomes)
+                    {
+                        if (heat >= b.minHeat && heat <= b.maxHeat &&
+                            wet  >= b.minWetness && wet  <= b.maxWetness)
+                        {
+                            col = b.color;
+                            break;
+                        }
+                    }
+                }
+                c[i] = col;
             }
 
             m.vertices = v;
@@ -132,10 +149,10 @@ namespace EndlessWorld
         }
 
         void SpawnTrees(int size, float spacing, float noiseScale, float heightMult,
-                        Vector2Int coord, GameObject prefab, float minHeight,
-                        float maxHeight, float density)
+                        Vector2Int coord, float heatScale, float wetScale,
+                        Biome[] biomes)
         {
-            if (!prefab || density <= 0f || maxHeight <= minHeight)
+            if (biomes == null || biomes.Length == 0)
                 return;
 
             Transform treeParent = transform.Find("Trees");
@@ -153,16 +170,33 @@ namespace EndlessWorld
             for (int y = 0; y < size; y++)
             for (int x = 0; x < size; x++)
             {
-                if (Random.value > density) continue;
-
                 float wx = coord.x * world + x * spacing;
                 float wz = coord.y * world + y * spacing;
+
+                float heat = Mathf.PerlinNoise((wx + _seed*2) / heatScale,
+                                               (wz + _seed*2) / heatScale);
+                float wet  = Mathf.PerlinNoise((wx + _seed*3) / wetScale,
+                                               (wz + _seed*3) / wetScale);
+
+                Biome chosen = null;
+                foreach (var b in biomes)
+                {
+                    if (heat >= b.minHeat && heat <= b.maxHeat &&
+                        wet  >= b.minWetness && wet  <= b.maxWetness)
+                    {
+                        chosen = b;
+                        break;
+                    }
+                }
+                if (chosen == null) continue;
+                if (!chosen.treePrefab || Random.value > chosen.treeDensity) continue;
+
                 float h01 = Mathf.PerlinNoise((wx + _seed) / noiseScale,
                                               (wz + _seed) / noiseScale);
-                if (h01 < minHeight || h01 > maxHeight) continue;
+                if (h01 < chosen.treeMinHeight || h01 > chosen.treeMaxHeight) continue;
 
                 float wy = h01 * heightMult;
-                Instantiate(prefab, new Vector3(wx, wy, wz), Quaternion.identity,
+                Instantiate(chosen.treePrefab, new Vector3(wx, wy, wz), Quaternion.identity,
                            treeParent);
             }
         }
