@@ -12,13 +12,14 @@ namespace EndlessWorld
                                 Material mat,
                                 Vector2Int coord,
                                 GameObject treePrefab, float treeMinHeight,
-                                float treeMaxHeight, float treeDensity)
+                                float treeMaxHeight, float treeDensity,
+                                Transform parent = null)
         {
             TerrainChunk tc = _pool.Count > 0
                               ? _pool.Pop()
                               : new GameObject("Chunk").AddComponent<TerrainChunk>();
 
-            tc.transform.parent = transform;
+            tc.transform.parent = parent ? parent : transform;
             tc.Build(size, spacing, noiseScale, heightMult,
                      sandT, stoneT, mat, coord,
                      treePrefab, treeMinHeight, treeMaxHeight, treeDensity);
