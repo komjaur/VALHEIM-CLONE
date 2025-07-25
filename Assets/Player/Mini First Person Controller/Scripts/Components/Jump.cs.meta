@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 084c01ab381b9da4082c1f84cf70751b
+guid: 8f977f53412d81140ab13b3fca57cca2
 MonoImporter:
   externalObjects: {}
   serializedVersion: 2
@@ -14,5 +14,5 @@ AssetOrigin:
   productId: 174710
   packageName: Mini First Person Controller
   packageVersion: 1.1.0
-  assetPath: Assets/Mini First Person Controller/Scripts/Components/GroundCheck.cs
+  assetPath: Assets/Player/Mini First Person Controller/Scripts/Components/Jump.cs
   uploadId: 442605
