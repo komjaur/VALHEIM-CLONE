@@ -4,6 +4,7 @@ Shader "EndlessWorld/HeightBlend"
     {
         _MainTex("Texture", 2D) = "white" {}
         _Tiling("UV Tiling"    , Float) = 8
+        _ChunkSize("Chunk Size", Float) = 240
     }
     SubShader
     {
@@ -33,12 +34,14 @@ Shader "EndlessWorld/HeightBlend"
 
             TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
             float _Tiling;
+            float _ChunkSize;
 
             Varyings vert (Attributes IN)
             {
                 Varyings OUT;
-                OUT.positionHCS = TransformObjectToHClip(IN.positionOS);
-                OUT.uv = IN.uv * _Tiling;
+                float3 worldPos = TransformObjectToWorld(IN.positionOS);
+                OUT.positionHCS = TransformWorldToHClip(worldPos);
+                OUT.uv = (worldPos.xz / _ChunkSize) * _Tiling;
                 OUT.color = IN.color;
                 return OUT;
             }
