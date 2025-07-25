@@ -1,10 +1,10 @@
-Shader "EndlessWorld/HeightBlend"
+Shader "EndlessWorld/HeightBlendArray"
 {
     Properties
     {
-        _MainTex("Texture", 2D) = "white" {}
-        _Tiling("UV Tiling"    , Float) = 8
-        _ChunkSize("Chunk Size", Float) = 240
+        _BiomeTexArr ("Biome Textures", 2DArray) = "" {}
+        _Tiling      ("UV Tiling", Float) = 8
+        _ChunkSize   ("Chunk Size", Float) = 240
     }
     SubShader
     {
@@ -14,9 +14,15 @@ Shader "EndlessWorld/HeightBlend"
         Pass
         {
             HLSLPROGRAM
-            #pragma vertex vert
+            #pragma vertex   vert
             #pragma fragment frag
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+
+            TEXTURE2D_ARRAY(_BiomeTexArr);
+            SAMPLER(sampler_BiomeTexArr);
+
+            float _Tiling;
+            float _ChunkSize;
 
             struct Attributes
             {
@@ -32,24 +38,23 @@ Shader "EndlessWorld/HeightBlend"
                 float4 color       : COLOR;
             };
 
-            TEXTURE2D(_MainTex); SAMPLER(sampler_MainTex);
-            float _Tiling;
-            float _ChunkSize;
-
             Varyings vert (Attributes IN)
             {
                 Varyings OUT;
-                float3 worldPos = TransformObjectToWorld(IN.positionOS);
-                OUT.positionHCS = TransformWorldToHClip(worldPos);
-                OUT.uv = (worldPos.xz / _ChunkSize) * _Tiling;
-                OUT.color = IN.color;
+                float3 worldPos   = TransformObjectToWorld(IN.positionOS);
+                OUT.positionHCS   = TransformWorldToHClip(worldPos);
+                OUT.uv            = (worldPos.xz / _ChunkSize) * _Tiling;
+                OUT.color         = IN.color;   // rgb = tint, a = biome index
                 return OUT;
             }
 
             half4 frag (Varyings IN) : SV_Target
             {
-                half4 tex = SAMPLE_TEXTURE2D(_MainTex, sampler_MainTex, IN.uv);
-                return tex * IN.color;
+                int   biomeIdx = (int)(IN.color.a * 255.0 + 0.5);
+                half4 tex      = SAMPLE_TEXTURE2D_ARRAY(_BiomeTexArr,
+                                                        sampler_BiomeTexArr,
+                                                        float3(IN.uv, biomeIdx));
+                return tex * half4(IN.color.rgb, 1);
             }
             ENDHLSL
         }

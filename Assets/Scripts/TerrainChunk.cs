@@ -5,51 +5,56 @@ namespace EndlessWorld
     [RequireComponent(typeof(MeshFilter), typeof(MeshRenderer))]
     public class TerrainChunk : MonoBehaviour
     {
-        MeshFilter _mf;
-        MeshFilter _waterMf;
+        MeshFilter   _mf;
+        MeshFilter   _waterMf;
         MeshRenderer _waterMr;
-        static int _seed = 12345;   // randomise for a new world
 
-        /* -------------------------------------------------------- */
+        static int _seed = 12345;   // change for a new procedural world
+
+        /* ──────────────────────── */
+
         void Awake()
         {
             _mf = GetComponent<MeshFilter>();
             EnsureWater();
         }
 
-        /* -------------------------------------------------------- */
+        /* ──────────────────────── */
+
         public void Build(int size, float spacing, float noiseScale, float heightMult,
                           Material mat,
                           Vector2Int coord,
                           float heatScale, float wetScale, Biome[] biomes,
                           float waterHeight, Material waterMat)
         {
-            /* build / refresh */
+            /* build mesh if needed */
             if (_mf.sharedMesh == null || _mf.sharedMesh.vertexCount != size * size)
                 _mf.sharedMesh = GenerateFlatGrid(size, spacing);
 
+            /* sculpt heights & colours (now picks texture index) */
             SculptHeightsAndColors(_mf.sharedMesh, size, spacing,
-                                   noiseScale, heightMult,
                                    coord,
                                    heatScale, wetScale, biomes);
 
-            /* place & render */
+            /* place chunk */
             float w = (size - 1) * spacing;
             transform.position = new Vector3(coord.x * w, 0, coord.y * w);
             gameObject.name    = $"Chunk {coord.x},{coord.y}";
             GetComponent<MeshRenderer>().sharedMaterial = mat;
 
-            /* water */
+            /* water plane */
             if (_waterMf.sharedMesh == null || _waterMf.sharedMesh.vertexCount != size * size)
                 _waterMf.sharedMesh = GenerateFlatGrid(size, spacing);
 
             _waterMf.transform.localPosition = new Vector3(0f, waterHeight, 0f);
             _waterMr.sharedMaterial = waterMat;
 
-            SpawnTrees(size, spacing, noiseScale, heightMult, coord,
-                       heatScale, wetScale, biomes);
-
+            /* trees */
+            SpawnTrees(size, spacing, noiseScale, heightMult,
+                       coord, heatScale, wetScale, biomes);
         }
+
+        /* ──────────────────────── */
 
         void EnsureWater()
         {
@@ -57,10 +62,10 @@ namespace EndlessWorld
             if (!wt)
             {
                 GameObject w = new("Water");
-                w.transform.parent = transform;
+                w.transform.parent        = transform;
                 w.transform.localPosition = Vector3.zero;
-                _waterMf = w.AddComponent<MeshFilter>();
-                _waterMr = w.AddComponent<MeshRenderer>();
+                _waterMf                  = w.AddComponent<MeshFilter>();
+                _waterMr                  = w.AddComponent<MeshRenderer>();
             }
             else
             {
@@ -69,7 +74,9 @@ namespace EndlessWorld
             }
         }
 
-        /* ------------------ helpers ------------------ */
+        /* ──────────────────────── */
+        /* -------- helpers ------- */
+
         public static Mesh GenerateFlatGrid(int size, float spacing)
         {
             var v = new Vector3[size * size];
@@ -107,70 +114,83 @@ namespace EndlessWorld
             return 1f;
         }
 
-        static Biome ClosestBiome(float heat, float wet, Biome[] biomes)
+        static Biome ClosestBiome(float heat, float wet, Biome[] biomes, out int index)
         {
+            index = 0;
             if (biomes == null || biomes.Length == 0)
                 return null;
 
-            Biome closest = biomes[0];
+            Biome closest   = biomes[0];
             float bestDist2 = float.MaxValue;
-            foreach (var b in biomes)
+
+            for (int i = 0; i < biomes.Length; ++i)
             {
-                float dh = heat < b.minHeat ? b.minHeat - heat : heat > b.maxHeat ? heat - b.maxHeat : 0f;
-                float dw = wet  < b.minWetness ? b.minWetness - wet : wet > b.maxWetness ? wet - b.maxWetness : 0f;
-                float d2 = dh*dh + dw*dw;
+                var b  = biomes[i];
+                float dh = heat < b.minHeat     ? b.minHeat     - heat :
+                           heat > b.maxHeat     ? heat          - b.maxHeat : 0f;
+                float dw = wet  < b.minWetness ? b.minWetness  - wet  :
+                           wet  > b.maxWetness ? wet           - b.maxWetness : 0f;
+                float d2 = dh * dh + dw * dw;
                 if (d2 < bestDist2)
                 {
                     bestDist2 = d2;
-                    closest = b;
+                    closest   = b;
+                    index     = i;
                 }
             }
-
             return closest;
         }
 
+        /* ----- NEW: per-vertex biome index in colour.a ----- */
         static void SculptHeightsAndColors(Mesh m, int size, float spacing,
-                                           float noiseScale, float heightMult,
                                            Vector2Int coord,
                                            float heatScale, float wetScale, Biome[] biomes)
         {
             var v = m.vertices;
             var c = m.colors == null || m.colors.Length != v.Length
-                    ? new Color[v.Length] : m.colors;
+                    ? new Color[v.Length]
+                    : m.colors;
 
             float world = (size - 1) * spacing;
-
-            var heights = new float[v.Length];
+            var   heights = new float[v.Length];
 
             for (int y = 0, i = 0; y < size; y++)
             for (int x = 0; x < size; x++, i++)
             {
-                heights[i] = 0f;
-                float wx = coord.x * world + v[i].x;
-                float wz = coord.y * world + v[i].z;
+                float wx   = coord.x * world + v[i].x;
+                float wz   = coord.y * world + v[i].z;
 
-                float heat = Mathf.PerlinNoise((wx + _seed*2) / heatScale,
-                                               (wz + _seed*2) / heatScale);
-                float wet  = Mathf.PerlinNoise((wx + _seed*3) / wetScale,
-                                               (wz + _seed*3) / wetScale);
+                float heat = Mathf.PerlinNoise((wx + _seed * 2) / heatScale,
+                                               (wz + _seed * 2) / heatScale);
+                float wet  = Mathf.PerlinNoise((wx + _seed * 3) / wetScale,
+                                               (wz + _seed * 3) / wetScale);
 
-                float hSum = 0f;
-                float wSum = 0f;
+                float hSum = 0f, wSum = 0f;
                 Color col  = Color.black;
+
+                int   domIndex  = 0;
+                float domWeight = -1f;
 
                 if (biomes != null && biomes.Length > 0)
                 {
-                    foreach (var b in biomes)
+                    for (int b = 0; b < biomes.Length; ++b)
                     {
-                        float bw = RangeWeight(heat, b.minHeat, b.maxHeat, 0.05f) *
-                                   RangeWeight(wet,  b.minWetness, b.maxWetness, 0.05f);
+                        var biome = biomes[b];
+                        float bw = RangeWeight(heat, biome.minHeat, biome.maxHeat, 0.05f) *
+                                   RangeWeight(wet , biome.minWetness, biome.maxWetness, 0.05f);
                         if (bw <= 0f) continue;
 
-                        float bh = Mathf.PerlinNoise((wx + _seed) / b.noiseScale,
-                                                     (wz + _seed) / b.noiseScale) *
-                                   b.heightMultiplier;
+                        if (bw > domWeight)
+                        {
+                            domWeight = bw;
+                            domIndex  = b;
+                        }
+
+                        float bh = Mathf.PerlinNoise((wx + _seed) / biome.noiseScale,
+                                                     (wz + _seed) / biome.noiseScale) *
+                                   biome.heightMultiplier;
                         hSum += bh * bw;
-                        col  += b.color * bw;
+                        col  += biome.color * bw;
                         wSum += bw;
                     }
                 }
@@ -179,39 +199,41 @@ namespace EndlessWorld
                 {
                     heights[i] = hSum / wSum;
                     col       /= wSum;
+                    col.a      = domIndex / 255f;   // encode index in 0..1
                 }
                 else if (biomes != null && biomes.Length > 0)
                 {
-                    Biome cb = ClosestBiome(heat, wet, biomes);
-                    if (cb != null)
-                    {
-                        heights[i] = Mathf.PerlinNoise((wx + _seed) / cb.noiseScale,
-                                                      (wz + _seed) / cb.noiseScale) *
-                                     cb.heightMultiplier;
-                        col = cb.color;
-                    }
+                    Biome cb = ClosestBiome(heat, wet, biomes, out domIndex);
+                    float bh = Mathf.PerlinNoise((wx + _seed) / cb.noiseScale,
+                                                 (wz + _seed) / cb.noiseScale) *
+                               cb.heightMultiplier;
+                    heights[i] = bh;
+                    col        = cb.color;
+                    col.a      = domIndex / 255f;
+                }
+                else
+                {
+                    heights[i] = 0f;
+                    col        = Color.gray;
+                    col.a      = 0f;
                 }
 
                 c[i] = col;
             }
 
-            // simple smoothing pass on generated heights
+            /* simple smoothing pass on heights */
             for (int y = 0, i = 0; y < size; y++)
             for (int x = 0; x < size; x++, i++)
             {
-                float sum = 0f;
-                int   count = 0;
-
+                float sum = 0f; int count = 0;
                 for (int yy = -1; yy <= 1; yy++)
                 for (int xx = -1; xx <= 1; xx++)
                 {
-                    int nx = x + xx;
-                    int ny = y + yy;
+                    int nx = x + xx, ny = y + yy;
                     if (nx < 0 || nx >= size || ny < 0 || ny >= size) continue;
                     sum += heights[ny * size + nx];
-                    count++;
+                    ++count;
                 }
-
                 v[i].y = sum / count;
             }
 
@@ -221,49 +243,50 @@ namespace EndlessWorld
             m.RecalculateBounds();
         }
 
+        /* ──────────────────────── */
+
         void SpawnTrees(int size, float spacing, float noiseScale, float heightMult,
                         Vector2Int coord, float heatScale, float wetScale,
                         Biome[] biomes)
         {
-            if (biomes == null || biomes.Length == 0)
-                return;
+            if (biomes == null || biomes.Length == 0) return;
 
             Transform treeParent = transform.Find("Trees");
             if (!treeParent)
             {
                 treeParent = new GameObject("Trees").transform;
-                treeParent.parent = transform;
+                treeParent.parent        = transform;
                 treeParent.localPosition = Vector3.zero;
             }
-            for (int i = treeParent.childCount - 1; i >= 0; i--)
+            for (int i = treeParent.childCount - 1; i >= 0; --i)
                 Destroy(treeParent.GetChild(i).gameObject);
 
             float world = (size - 1) * spacing;
 
-            for (int y = 0; y < size; y++)
-            for (int x = 0; x < size; x++)
+            for (int y = 0; y < size; ++y)
+            for (int x = 0; x < size; ++x)
             {
                 float wx = coord.x * world + x * spacing;
                 float wz = coord.y * world + y * spacing;
 
-                float heat = Mathf.PerlinNoise((wx + _seed*2) / heatScale,
-                                               (wz + _seed*2) / heatScale);
-                float wet  = Mathf.PerlinNoise((wx + _seed*3) / wetScale,
-                                               (wz + _seed*3) / wetScale);
+                float heat = Mathf.PerlinNoise((wx + _seed * 2) / heatScale,
+                                               (wz + _seed * 2) / heatScale);
+                float wet  = Mathf.PerlinNoise((wx + _seed * 3) / wetScale,
+                                               (wz + _seed * 3) / wetScale);
 
                 Biome chosen = null;
-                foreach (var b in biomes)
+                for (int b = 0; b < biomes.Length; ++b)
                 {
-                    if (heat >= b.minHeat && heat <= b.maxHeat &&
-                        wet  >= b.minWetness && wet  <= b.maxWetness)
+                    var bio = biomes[b];
+                    if (heat >= bio.minHeat && heat <= bio.maxHeat &&
+                        wet  >= bio.minWetness && wet  <= bio.maxWetness)
                     {
-                        chosen = b;
+                        chosen = bio;
                         break;
                     }
                 }
-                if (chosen == null)
-                    chosen = ClosestBiome(heat, wet, biomes);
-                if (chosen == null) continue;
+                if (chosen == null) chosen = biomes[0];   // fallback
+
                 if (!chosen.treePrefab || Random.value > chosen.treeDensity) continue;
 
                 float h01 = Mathf.PerlinNoise((wx + _seed) / noiseScale,
@@ -271,10 +294,11 @@ namespace EndlessWorld
                 if (h01 < chosen.treeMinHeight || h01 > chosen.treeMaxHeight) continue;
 
                 float wy = h01 * heightMult;
-                Instantiate(chosen.treePrefab, new Vector3(wx, wy, wz), Quaternion.identity,
-                           treeParent);
+                Instantiate(chosen.treePrefab,
+                            new Vector3(wx, wy, wz),
+                            Quaternion.identity,
+                            treeParent);
             }
         }
     }
 }
-
