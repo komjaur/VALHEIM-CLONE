@@ -19,5 +19,17 @@ namespace EndlessWorld
         [Range(0f,1f)] public float treeMinHeight = 0.4f;
         [Range(0f,1f)] public float treeMaxHeight = 0.7f;
         [Range(0f,1f)] public float treeDensity = 0.1f;
+
+        [Header("Terrain Settings")]
+        public float noiseScale = 60f;
+        public float heightMultiplier = 25f;
+
+        [Header("Biome Textures & Thresholds")]
+        public Texture2D sandTex;
+        public Texture2D grassTex;
+        public Texture2D stoneTex;
+        [Range(0f,1f)] public float sandHeight = 0.35f;
+        [Range(0f,1f)] public float stoneHeight = 0.75f;
+        public float textureTiling = 8f;
     }
 }
