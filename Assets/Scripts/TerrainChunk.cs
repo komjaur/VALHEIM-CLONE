@@ -95,7 +95,7 @@ namespace EndlessWorld
             }
 
             Mesh m = new() { vertices = v, triangles = t, uv = u };
-            m.RecalculateNormals(60f);
+            m.RecalculateNormals();
             return m;
         }
 
@@ -184,7 +184,7 @@ namespace EndlessWorld
 
             m.vertices = v;
             m.colors   = c;
-            m.RecalculateNormals(60f);
+            m.RecalculateNormals();
             m.RecalculateBounds();
         }
 
