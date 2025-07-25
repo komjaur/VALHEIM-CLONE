@@ -16,8 +16,13 @@ namespace EndlessWorld
         public WorldSettings world;
 
         /* -------- internals -------- */
-        readonly Dictionary<Vector2Int,TerrainChunk> _loaded = new();
-        readonly Dictionary<Vector2Int,WaterChunk>   _waterLoaded = new();
+        class Chunk
+        {
+            public TerrainChunk terrain;
+            public WaterChunk   water;
+        }
+
+        readonly Dictionary<Vector2Int,Chunk> _loaded = new();
         TerrainChunkPool _pool;
         WaterChunkPool _waterPool;
         Material _sharedMat;
@@ -54,23 +59,22 @@ namespace EndlessWorld
                 Vector2Int c = pChunk + new Vector2Int(x,y);
                 if (_loaded.ContainsKey(c)) continue;
 
-                TerrainChunk tc = _pool.Get(
+                Chunk chunk = new();
+                chunk.terrain = _pool.Get(
                     world.chunkSize, world.vertexSpacing,
                     world.noiseScale, world.heightMultiplier,
                     world.sandHeight, world.stoneHeight,
                     _sharedMat,
                     c,
                     world.treePrefab, world.treeMinHeight,
-                    world.treeMaxHeight, world.treeDensity);
-                _loaded.Add(c, tc);
+                    world.treeMaxHeight, world.treeDensity,
+                    transform);
+                chunk.water = _waterPool.Get(
+                    world.chunkSize, world.vertexSpacing,
+                    world.waterHeight, _waterMat, c,
+                    chunk.terrain.transform);
 
-                if (!_waterLoaded.ContainsKey(c))
-                {
-                    WaterChunk wc = _waterPool.Get(
-                        world.chunkSize, world.vertexSpacing,
-                        world.waterHeight, _waterMat, c);
-                    _waterLoaded.Add(c, wc);
-                }
+                _loaded.Add(c, chunk);
             }
 
             /* despawn fringe */
@@ -80,16 +84,14 @@ namespace EndlessWorld
                 if (Mathf.Abs(kv.Key.x - pChunk.x) > viewDistance + 1 ||
                     Mathf.Abs(kv.Key.y - pChunk.y) > viewDistance + 1)
                 {
-                    _pool.Release(kv.Value);
-                    if (_waterLoaded.TryGetValue(kv.Key, out var w))
-                        _waterPool.Release(w);
+                    _pool.Release(kv.Value.terrain);
+                    _waterPool.Release(kv.Value.water);
                     toRemove.Add(kv.Key);
                 }
             }
             foreach (var c in toRemove)
             {
                 _loaded.Remove(c);
-                _waterLoaded.Remove(c);
             }
         }
 
