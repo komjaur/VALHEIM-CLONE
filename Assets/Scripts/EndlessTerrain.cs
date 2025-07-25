@@ -4,7 +4,6 @@ using UnityEngine;
 namespace EndlessWorld
 {
     [RequireComponent(typeof(TerrainChunkPool))]
-    [RequireComponent(typeof(WaterChunkPool))]
     public class EndlessTerrain : MonoBehaviour
     {
         /* -------- Viewer & world params -------- */
@@ -16,22 +15,14 @@ namespace EndlessWorld
         public WorldSettings world;
 
         /* -------- internals -------- */
-        class Chunk
-        {
-            public TerrainChunk terrain;
-            public WaterChunk   water;
-        }
-
-        readonly Dictionary<Vector2Int,Chunk> _loaded = new();
+        readonly Dictionary<Vector2Int,TerrainChunk> _loaded = new();
         TerrainChunkPool _pool;
-        WaterChunkPool _waterPool;
         Material _sharedMat;
         Material _waterMat;
 
         void Start()
         {
             _pool = GetComponent<TerrainChunkPool>();
-            _waterPool = GetComponent<WaterChunkPool>();
             if (!player)
                 player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
@@ -59,8 +50,7 @@ namespace EndlessWorld
                 Vector2Int c = pChunk + new Vector2Int(x,y);
                 if (_loaded.ContainsKey(c)) continue;
 
-                Chunk chunk = new();
-                chunk.terrain = _pool.Get(
+                TerrainChunk chunk = _pool.Get(
                     world.chunkSize, world.vertexSpacing,
                     world.noiseScale, world.heightMultiplier,
                     world.sandHeight, world.stoneHeight,
@@ -68,11 +58,8 @@ namespace EndlessWorld
                     c,
                     world.treePrefab, world.treeMinHeight,
                     world.treeMaxHeight, world.treeDensity,
+                    world.waterHeight, _waterMat,
                     transform);
-                chunk.water = _waterPool.Get(
-                    world.chunkSize, world.vertexSpacing,
-                    world.waterHeight, _waterMat, c,
-                    chunk.terrain.transform);
 
                 _loaded.Add(c, chunk);
             }
@@ -84,8 +71,7 @@ namespace EndlessWorld
                 if (Mathf.Abs(kv.Key.x - pChunk.x) > viewDistance + 1 ||
                     Mathf.Abs(kv.Key.y - pChunk.y) > viewDistance + 1)
                 {
-                    _pool.Release(kv.Value.terrain);
-                    _waterPool.Release(kv.Value.water);
+                    _pool.Release(kv.Value);
                     toRemove.Add(kv.Key);
                 }
             }
