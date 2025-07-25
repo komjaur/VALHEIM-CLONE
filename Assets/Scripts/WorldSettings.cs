@@ -8,21 +8,13 @@ namespace EndlessWorld
         [Header("Chunk Geometry")]
         public int   chunkSize = 241;
         public float vertexSpacing = 1f;
-        public float noiseScale = 60f;
-        public float heightMultiplier = 25f;
+        // geometry settings are now defined per biome
 
         [Header("Biome Generation")]
         public float heatNoiseScale = 100f;
         public float wetnessNoiseScale = 100f;
         public Biome[] biomes;
 
-        [Header("Biome Textures & Thresholds")]
-        public Texture2D sandTex;
-        public Texture2D grassTex;
-        public Texture2D stoneTex;
-        [Range(0f,1f)] public float sandHeight = 0.35f;
-        [Range(0f,1f)] public float stoneHeight = 0.75f;
-        public float textureTiling = 8f;
 
         [Header("Tree Settings")]
         public GameObject treePrefab;

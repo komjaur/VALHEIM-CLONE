@@ -17,7 +17,7 @@ namespace EndlessWorld
         /* -------- internals -------- */
         readonly Dictionary<Vector2Int,TerrainChunk> _loaded = new();
         TerrainChunkPool _pool;
-        Material _sharedMat;
+        Dictionary<Biome,Material> _biomeMats;
         Material _waterMat;
 
         void Start()
@@ -28,11 +28,16 @@ namespace EndlessWorld
 
             if (!world) return;
 
-            _sharedMat = new Material(Shader.Find("EndlessWorld/HeightBlend"));
-            _sharedMat.SetTexture("_Sand",  world.sandTex);
-            _sharedMat.SetTexture("_Grass", world.grassTex);
-            _sharedMat.SetTexture("_Stone", world.stoneTex);
-            _sharedMat.SetFloat  ("_Tiling", world.textureTiling);
+            _biomeMats = new Dictionary<Biome, Material>();
+            foreach (var b in world.biomes)
+            {
+                var mat = new Material(Shader.Find("EndlessWorld/HeightBlend"));
+                if (b.sandTex)  mat.SetTexture("_Sand",  b.sandTex);
+                if (b.grassTex) mat.SetTexture("_Grass", b.grassTex);
+                if (b.stoneTex) mat.SetTexture("_Stone", b.stoneTex);
+                mat.SetFloat("_Tiling", b.textureTiling);
+                _biomeMats[b] = mat;
+            }
 
             _waterMat = new Material(Shader.Find("Unlit/Color"));
             _waterMat.color = world.waterColor;
@@ -50,11 +55,18 @@ namespace EndlessWorld
                 Vector2Int c = pChunk + new Vector2Int(x,y);
                 if (_loaded.ContainsKey(c)) continue;
 
+                Biome biome = ChooseBiome(c);
+                Material mat = (biome != null && _biomeMats.ContainsKey(biome))
+                                ? _biomeMats[biome]
+                                : null;
+
                 TerrainChunk chunk = _pool.Get(
                     world.chunkSize, world.vertexSpacing,
-                    world.noiseScale, world.heightMultiplier,
-                    world.sandHeight, world.stoneHeight,
-                    _sharedMat,
+                    biome != null ? biome.noiseScale : 60f,
+                    biome != null ? biome.heightMultiplier : 25f,
+                    biome != null ? biome.sandHeight : 0.35f,
+                    biome != null ? biome.stoneHeight : 0.75f,
+                    mat,
                     c,
                     world.heatNoiseScale, world.wetnessNoiseScale, world.biomes,
                     world.waterHeight, _waterMat,
@@ -86,6 +98,33 @@ namespace EndlessWorld
             return new Vector2Int(
                 Mathf.FloorToInt(pos.x / chunkWorld),
                 Mathf.FloorToInt(pos.z / chunkWorld));
+        }
+
+        Biome ChooseBiome(Vector2Int coord)
+        {
+            if (world == null || world.biomes == null || world.biomes.Length == 0)
+                return null;
+
+            float worldSize = (world.chunkSize - 1) * world.vertexSpacing;
+            float wx = coord.x * worldSize;
+            float wz = coord.y * worldSize;
+
+            const int seed = 12345; // must match TerrainChunk
+            float heat = Mathf.PerlinNoise((wx + seed*2) / world.heatNoiseScale,
+                                           (wz + seed*2) / world.heatNoiseScale);
+            float wet  = Mathf.PerlinNoise((wx + seed*3) / world.wetnessNoiseScale,
+                                           (wz + seed*3) / world.wetnessNoiseScale);
+
+            foreach (var b in world.biomes)
+            {
+                if (heat >= b.minHeat && heat <= b.maxHeat &&
+                    wet  >= b.minWetness && wet  <= b.maxWetness)
+                {
+                    return b;
+                }
+            }
+
+            return world.biomes[0];
         }
     }
 }
