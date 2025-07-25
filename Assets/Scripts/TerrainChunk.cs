@@ -38,7 +38,7 @@ namespace EndlessWorld
         }
 
         /* ------------------ helpers ------------------ */
-        static Mesh GenerateFlatGrid(int size, float spacing)
+        public static Mesh GenerateFlatGrid(int size, float spacing)
         {
             var v = new Vector3[size * size];
             var u = new Vector2[v.Length];
@@ -136,3 +136,4 @@ namespace EndlessWorld
         }
     }
 }
+

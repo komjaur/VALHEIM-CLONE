@@ -25,5 +25,9 @@ namespace EndlessWorld
         [Range(0f,1f)] public float treeMaxHeight = 0.7f;
         [Range(0f,1f)] public float treeDensity = 0.1f;
 
+        [Header("Water Settings")]
+        public float waterHeight = 0f;
+        public Color  waterColor = new(0f, 0.5f, 1f, 0.5f);
+
     }
 }
