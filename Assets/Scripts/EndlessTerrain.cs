@@ -120,7 +120,22 @@ namespace EndlessWorld
                 }
             }
 
-            return world.biomes[0];
+            // no biome fully matched, pick the closest one
+            Biome closest = world.biomes[0];
+            float bestDist2 = float.MaxValue;
+            foreach (var b in world.biomes)
+            {
+                float dh = heat < b.minHeat ? b.minHeat - heat : heat > b.maxHeat ? heat - b.maxHeat : 0f;
+                float dw = wet  < b.minWetness ? b.minWetness - wet : wet > b.maxWetness ? wet - b.maxWetness : 0f;
+                float d2 = dh*dh + dw*dw;
+                if (d2 < bestDist2)
+                {
+                    bestDist2 = d2;
+                    closest = b;
+                }
+            }
+
+            return closest;
         }
     }
 }

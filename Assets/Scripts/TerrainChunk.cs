@@ -107,6 +107,28 @@ namespace EndlessWorld
             return 1f;
         }
 
+        static Biome ClosestBiome(float heat, float wet, Biome[] biomes)
+        {
+            if (biomes == null || biomes.Length == 0)
+                return null;
+
+            Biome closest = biomes[0];
+            float bestDist2 = float.MaxValue;
+            foreach (var b in biomes)
+            {
+                float dh = heat < b.minHeat ? b.minHeat - heat : heat > b.maxHeat ? heat - b.maxHeat : 0f;
+                float dw = wet  < b.minWetness ? b.minWetness - wet : wet > b.maxWetness ? wet - b.maxWetness : 0f;
+                float d2 = dh*dh + dw*dw;
+                if (d2 < bestDist2)
+                {
+                    bestDist2 = d2;
+                    closest = b;
+                }
+            }
+
+            return closest;
+        }
+
         static void SculptHeightsAndColors(Mesh m, int size, float spacing,
                                            float noiseScale, float heightMult,
                                            Vector2Int coord,
@@ -157,6 +179,17 @@ namespace EndlessWorld
                 {
                     heights[i] = hSum / wSum;
                     col       /= wSum;
+                }
+                else if (biomes != null && biomes.Length > 0)
+                {
+                    Biome cb = ClosestBiome(heat, wet, biomes);
+                    if (cb != null)
+                    {
+                        heights[i] = Mathf.PerlinNoise((wx + _seed) / cb.noiseScale,
+                                                      (wz + _seed) / cb.noiseScale) *
+                                     cb.heightMultiplier;
+                        col = cb.color;
+                    }
                 }
 
                 c[i] = col;
@@ -228,6 +261,8 @@ namespace EndlessWorld
                         break;
                     }
                 }
+                if (chosen == null)
+                    chosen = ClosestBiome(heat, wet, biomes);
                 if (chosen == null) continue;
                 if (!chosen.treePrefab || Random.value > chosen.treeDensity) continue;
 
