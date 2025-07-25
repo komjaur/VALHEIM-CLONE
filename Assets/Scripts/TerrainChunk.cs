@@ -99,6 +99,14 @@ namespace EndlessWorld
             return m;
         }
 
+        static float RangeWeight(float value, float min, float max, float fade)
+        {
+            if (value < min - fade || value > max + fade) return 0f;
+            if (value < min) return Mathf.InverseLerp(min - fade, min, value);
+            if (value > max) return Mathf.InverseLerp(max + fade, max, value);
+            return 1f;
+        }
+
         static void SculptHeightsAndColors(Mesh m, int size, float spacing,
                                            float noiseScale, float heightMult,
                                            float sandT, float stoneT, Vector2Int coord,
@@ -116,29 +124,38 @@ namespace EndlessWorld
                 float wx = coord.x * world + v[i].x;
                 float wz = coord.y * world + v[i].z;
 
-                float h01 = Mathf.PerlinNoise((wx + _seed) / noiseScale,
-                                              (wz + _seed) / noiseScale);
-
                 float heat = Mathf.PerlinNoise((wx + _seed*2) / heatScale,
                                                (wz + _seed*2) / heatScale);
                 float wet  = Mathf.PerlinNoise((wx + _seed*3) / wetScale,
                                                (wz + _seed*3) / wetScale);
 
-                v[i].y = h01 * heightMult;
+                float hSum = 0f;
+                float wSum = 0f;
+                Color col  = Color.black;
 
-                Color col = Color.black;
-                if (biomes != null)
+                if (biomes != null && biomes.Length > 0)
                 {
                     foreach (var b in biomes)
                     {
-                        if (heat >= b.minHeat && heat <= b.maxHeat &&
-                            wet  >= b.minWetness && wet  <= b.maxWetness)
-                        {
-                            col = b.color;
-                            break;
-                        }
+                        float bw = RangeWeight(heat, b.minHeat, b.maxHeat, 0.05f) *
+                                   RangeWeight(wet,  b.minWetness, b.maxWetness, 0.05f);
+                        if (bw <= 0f) continue;
+
+                        float bh = Mathf.PerlinNoise((wx + _seed) / b.noiseScale,
+                                                     (wz + _seed) / b.noiseScale) *
+                                   b.heightMultiplier;
+                        hSum += bh * bw;
+                        col  += b.color * bw;
+                        wSum += bw;
                     }
                 }
+
+                if (wSum > 0f)
+                {
+                    v[i].y = hSum / wSum;
+                    col   /= wSum;
+                }
+
                 c[i] = col;
             }
 
