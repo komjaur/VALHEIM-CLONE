@@ -4,6 +4,7 @@ using UnityEngine;
 namespace EndlessWorld
 {
     [RequireComponent(typeof(TerrainChunkPool))]
+    [RequireComponent(typeof(WaterChunkPool))]
     public class EndlessTerrain : MonoBehaviour
     {
         /* -------- Viewer & world params -------- */
@@ -16,12 +17,16 @@ namespace EndlessWorld
 
         /* -------- internals -------- */
         readonly Dictionary<Vector2Int,TerrainChunk> _loaded = new();
+        readonly Dictionary<Vector2Int,WaterChunk>   _waterLoaded = new();
         TerrainChunkPool _pool;
+        WaterChunkPool _waterPool;
         Material _sharedMat;
+        Material _waterMat;
 
         void Start()
         {
             _pool = GetComponent<TerrainChunkPool>();
+            _waterPool = GetComponent<WaterChunkPool>();
             if (!player)
                 player = GameObject.FindGameObjectWithTag("Player")?.transform;
 
@@ -32,6 +37,9 @@ namespace EndlessWorld
             _sharedMat.SetTexture("_Grass", world.grassTex);
             _sharedMat.SetTexture("_Stone", world.stoneTex);
             _sharedMat.SetFloat  ("_Tiling", world.textureTiling);
+
+            _waterMat = new Material(Shader.Find("Unlit/Color"));
+            _waterMat.color = world.waterColor;
         }
 
         void Update()
@@ -55,6 +63,14 @@ namespace EndlessWorld
                     world.treePrefab, world.treeMinHeight,
                     world.treeMaxHeight, world.treeDensity);
                 _loaded.Add(c, tc);
+
+                if (!_waterLoaded.ContainsKey(c))
+                {
+                    WaterChunk wc = _waterPool.Get(
+                        world.chunkSize, world.vertexSpacing,
+                        world.waterHeight, _waterMat, c);
+                    _waterLoaded.Add(c, wc);
+                }
             }
 
             /* despawn fringe */
@@ -65,10 +81,16 @@ namespace EndlessWorld
                     Mathf.Abs(kv.Key.y - pChunk.y) > viewDistance + 1)
                 {
                     _pool.Release(kv.Value);
+                    if (_waterLoaded.TryGetValue(kv.Key, out var w))
+                        _waterPool.Release(w);
                     toRemove.Add(kv.Key);
                 }
             }
-            foreach (var c in toRemove) _loaded.Remove(c);
+            foreach (var c in toRemove)
+            {
+                _loaded.Remove(c);
+                _waterLoaded.Remove(c);
+            }
         }
 
         Vector2Int WorldToChunk(Vector3 pos)
@@ -80,3 +102,4 @@ namespace EndlessWorld
         }
     }
 }
+
