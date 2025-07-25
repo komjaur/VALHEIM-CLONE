@@ -26,14 +26,14 @@ namespace EndlessWorld
                                    noiseScale, heightMult,
                                    sandT, stoneT, coord);
 
-            SpawnTrees(size, spacing, noiseScale, heightMult, coord,
-                       treePrefab, treeMinHeight, treeMaxHeight, treeDensity);
-
             /* place & render */
             float w = (size - 1) * spacing;
             transform.position = new Vector3(coord.x * w, 0, coord.y * w);
             gameObject.name    = $"Chunk {coord.x},{coord.y}";
             GetComponent<MeshRenderer>().sharedMaterial = mat;
+
+            SpawnTrees(size, spacing, noiseScale, heightMult, coord,
+                       treePrefab, treeMinHeight, treeMaxHeight, treeDensity);
 
         }
 
