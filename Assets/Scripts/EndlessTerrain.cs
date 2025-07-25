@@ -18,7 +18,6 @@ namespace EndlessWorld
         readonly Dictionary<Vector2Int, TerrainChunk> _loaded = new();
         TerrainChunkPool _pool;
 
-        Texture2DArray _biomeArray;
         Material       _sharedMat;
         Material       _waterMat;
 
@@ -30,31 +29,10 @@ namespace EndlessWorld
             if (!player) player = GameObject.FindGameObjectWithTag("Player")?.transform;
             if (!world || world.biomes == null || world.biomes.Length == 0) return;
 
-            /* ---------- create texture array ---------- */
-            int texSize = world.biomes[0].texture ? world.biomes[0].texture.width : 128;
-            _biomeArray = new Texture2DArray(
-                texSize, texSize, world.biomes.Length,
-                TextureFormat.RGBA32, /* generate mips */ true, /* sRGB */ false);
-
-            for (int i = 0; i < world.biomes.Length; ++i)
-            {
-                Texture src = world.biomes[i].texture ? world.biomes[i].texture
-                                                      : Texture2D.whiteTexture;
-
-                // turn *any* source texture (read-only, compressed, NPOT, …) into
-                // a readable RGBA32 buffer of the right size:
-                Color[] pixels = ExtractPixelsToRGBA32(src, texSize);
-
-                _biomeArray.SetPixels(pixels, i, 0);   // fill the slice (mip 0)
-            }
-            _biomeArray.Apply(/* update mipmaps */ true, /* make immutable */ true);
-
             /* ---------- shared material ---------- */
-            _sharedMat = new Material(Shader.Find("EndlessWorld/HeightBlendArray"));
+            _sharedMat = new Material(Shader.Find("EndlessWorld/VertexColor"));
             float chunkWorld = (world.chunkSize - 1) * world.vertexSpacing;
             _sharedMat.SetFloat("_ChunkSize", chunkWorld);
-            _sharedMat.SetFloat("_Tiling", world.textureTiling);
-            _sharedMat.SetTexture("_BiomeTexArr", _biomeArray);
 
             /* ---------- water material ---------- */
             _waterMat = new Material(Shader.Find("Unlit/Color"))
@@ -64,34 +42,6 @@ namespace EndlessWorld
         }
 
         /* ─────────────────────────────────── */
-        /* ----- Helper: copies any texture into a Color[] ----- */
-
-        static Color[] ExtractPixelsToRGBA32(Texture src, int targetSize)
-        {
-            // Allocate a temporary RenderTexture large enough to hold the scaled copy
-            RenderTexture rt = RenderTexture.GetTemporary(
-                targetSize, targetSize, 0,
-                RenderTextureFormat.ARGB32,
-                RenderTextureReadWrite.sRGB);
-
-            // Copy & scale (GPU path, succeeds with any texture type/format)
-            Graphics.Blit(src, rt);
-
-            // Read back into a readable Texture2D
-            RenderTexture prev = RenderTexture.active;
-            RenderTexture.active = rt;
-
-            Texture2D tmp = new Texture2D(
-                targetSize, targetSize, TextureFormat.RGBA32, false, false);
-            tmp.ReadPixels(new Rect(0, 0, targetSize, targetSize), 0, 0);
-            tmp.Apply();
-
-            RenderTexture.active = prev;
-            RenderTexture.ReleaseTemporary(rt);
-
-            return tmp.GetPixels();
-        }
-
         /* ─────────────────────────────────── */
 
         void Update()
