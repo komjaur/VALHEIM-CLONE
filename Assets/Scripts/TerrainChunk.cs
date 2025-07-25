@@ -6,17 +6,24 @@ namespace EndlessWorld
     public class TerrainChunk : MonoBehaviour
     {
         MeshFilter _mf;
+        MeshFilter _waterMf;
+        MeshRenderer _waterMr;
         static int _seed = 12345;   // randomise for a new world
 
         /* -------------------------------------------------------- */
-        void Awake() => _mf = GetComponent<MeshFilter>();
+        void Awake()
+        {
+            _mf = GetComponent<MeshFilter>();
+            EnsureWater();
+        }
 
         /* -------------------------------------------------------- */
         public void Build(int size, float spacing, float noiseScale, float heightMult,
                           float sandT, float stoneT, Material mat,
                           Vector2Int coord,
                           GameObject treePrefab, float treeMinHeight,
-                          float treeMaxHeight, float treeDensity)
+                          float treeMaxHeight, float treeDensity,
+                          float waterHeight, Material waterMat)
         {
             /* build / refresh */
             if (_mf.sharedMesh == null || _mf.sharedMesh.vertexCount != size * size)
@@ -32,9 +39,34 @@ namespace EndlessWorld
             gameObject.name    = $"Chunk {coord.x},{coord.y}";
             GetComponent<MeshRenderer>().sharedMaterial = mat;
 
+            /* water */
+            if (_waterMf.sharedMesh == null || _waterMf.sharedMesh.vertexCount != size * size)
+                _waterMf.sharedMesh = GenerateFlatGrid(size, spacing);
+
+            _waterMf.transform.localPosition = new Vector3(0f, waterHeight, 0f);
+            _waterMr.sharedMaterial = waterMat;
+
             SpawnTrees(size, spacing, noiseScale, heightMult, coord,
                        treePrefab, treeMinHeight, treeMaxHeight, treeDensity);
 
+        }
+
+        void EnsureWater()
+        {
+            Transform wt = transform.Find("Water");
+            if (!wt)
+            {
+                GameObject w = new("Water");
+                w.transform.parent = transform;
+                w.transform.localPosition = Vector3.zero;
+                _waterMf = w.AddComponent<MeshFilter>();
+                _waterMr = w.AddComponent<MeshRenderer>();
+            }
+            else
+            {
+                _waterMf = wt.GetComponent<MeshFilter>();
+                _waterMr = wt.GetComponent<MeshRenderer>();
+            }
         }
 
         /* ------------------ helpers ------------------ */
