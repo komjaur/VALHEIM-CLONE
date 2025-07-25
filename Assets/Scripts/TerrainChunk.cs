@@ -95,7 +95,7 @@ namespace EndlessWorld
             }
 
             Mesh m = new() { vertices = v, triangles = t, uv = u };
-            m.RecalculateNormals();
+            m.RecalculateNormals(60f);
             return m;
         }
 
@@ -118,9 +118,12 @@ namespace EndlessWorld
 
             float world = (size - 1) * spacing;
 
+            var heights = new float[v.Length];
+
             for (int y = 0, i = 0; y < size; y++)
             for (int x = 0; x < size; x++, i++)
             {
+                heights[i] = 0f;
                 float wx = coord.x * world + v[i].x;
                 float wz = coord.y * world + v[i].z;
 
@@ -152,16 +155,36 @@ namespace EndlessWorld
 
                 if (wSum > 0f)
                 {
-                    v[i].y = hSum / wSum;
-                    col   /= wSum;
+                    heights[i] = hSum / wSum;
+                    col       /= wSum;
                 }
 
                 c[i] = col;
             }
 
+            // simple smoothing pass on generated heights
+            for (int y = 0, i = 0; y < size; y++)
+            for (int x = 0; x < size; x++, i++)
+            {
+                float sum = 0f;
+                int   count = 0;
+
+                for (int yy = -1; yy <= 1; yy++)
+                for (int xx = -1; xx <= 1; xx++)
+                {
+                    int nx = x + xx;
+                    int ny = y + yy;
+                    if (nx < 0 || nx >= size || ny < 0 || ny >= size) continue;
+                    sum += heights[ny * size + nx];
+                    count++;
+                }
+
+                v[i].y = sum / count;
+            }
+
             m.vertices = v;
             m.colors   = c;
-            m.RecalculateNormals();
+            m.RecalculateNormals(60f);
             m.RecalculateBounds();
         }
 
