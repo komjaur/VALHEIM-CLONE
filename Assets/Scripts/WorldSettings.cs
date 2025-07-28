@@ -15,10 +15,6 @@ namespace EndlessWorld
         public float wetnessNoiseScale = 100f;
         public Biome[] biomes;
 
-
-        [Header("Texture Settings")]
-        public float textureTiling = 8f;
-
         [Header("Water Settings")]
         public float waterHeight = 0f;
         public Color  waterColor = new(0f, 0.5f, 1f, 0.5f);

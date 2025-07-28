@@ -23,8 +23,5 @@ namespace EndlessWorld
         [Header("Terrain Settings")]
         public float noiseScale = 60f;
         public float heightMultiplier = 25f;
-
-        [Header("Biome Texture")]
-        public Texture2D texture;
     }
 }

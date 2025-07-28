@@ -23,4 +23,3 @@ MonoBehaviour:
   treeDensity: 0.1
   noiseScale: 60
   heightMultiplier: 25
-  texture: {fileID: 2800000, guid: a60e845f1f746e54d8822f49402277a4, type: 3}
