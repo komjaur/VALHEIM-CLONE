@@ -188,7 +188,7 @@ namespace EndlessWorld
 
                         float bh = Mathf.PerlinNoise((wx + _seed) / biome.noiseScale,
                                                      (wz + _seed) / biome.noiseScale) *
-                                   biome.heightMultiplier;
+                                   biome.heightMultiplier + biome.baseHeight;
                         hSum += bh * bw;
                         col  += biome.color * bw;
                         wSum += bw;
@@ -206,7 +206,7 @@ namespace EndlessWorld
                     Biome cb = ClosestBiome(heat, wet, biomes, out domIndex);
                     float bh = Mathf.PerlinNoise((wx + _seed) / cb.noiseScale,
                                                  (wz + _seed) / cb.noiseScale) *
-                               cb.heightMultiplier;
+                               cb.heightMultiplier + cb.baseHeight;
                     heights[i] = bh;
                     col        = cb.color;
                     col.a      = 1f;

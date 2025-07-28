@@ -23,5 +23,6 @@ namespace EndlessWorld
         [Header("Terrain Settings")]
         public float noiseScale = 60f;
         public float heightMultiplier = 25f;
+        public float baseHeight = 0f;
     }
 }

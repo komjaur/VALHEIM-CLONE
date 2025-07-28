@@ -23,3 +23,4 @@ MonoBehaviour:
   treeDensity: 0.1
   noiseScale: 60
   heightMultiplier: 25
+  baseHeight: 0
