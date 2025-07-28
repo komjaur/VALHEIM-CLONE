@@ -31,7 +31,7 @@ namespace EndlessWorld
             if (_mf.sharedMesh == null || _mf.sharedMesh.vertexCount != size * size)
                 _mf.sharedMesh = GenerateFlatGrid(size, spacing);
 
-            /* sculpt heights & colours (now picks texture index) */
+            /* sculpt heights and apply biome colours */
             SculptHeightsAndColors(_mf.sharedMesh, size, spacing,
                                    coord,
                                    heatScale, wetScale, biomes);
@@ -141,7 +141,7 @@ namespace EndlessWorld
             return closest;
         }
 
-        /* ----- NEW: per-vertex biome index in colour.a ----- */
+        /* ----- calculate heights and vertex colours ----- */
         static void SculptHeightsAndColors(Mesh m, int size, float spacing,
                                            Vector2Int coord,
                                            float heatScale, float wetScale, Biome[] biomes)
@@ -199,7 +199,7 @@ namespace EndlessWorld
                 {
                     heights[i] = hSum / wSum;
                     col       /= wSum;
-                    col.a      = domIndex / 255f;   // encode index in 0..1
+                    col.a      = 1f;
                 }
                 else if (biomes != null && biomes.Length > 0)
                 {
@@ -209,13 +209,13 @@ namespace EndlessWorld
                                cb.heightMultiplier;
                     heights[i] = bh;
                     col        = cb.color;
-                    col.a      = domIndex / 255f;
+                    col.a      = 1f;
                 }
                 else
                 {
                     heights[i] = 0f;
                     col        = Color.gray;
-                    col.a      = 0f;
+                    col.a      = 1f;
                 }
 
                 c[i] = col;
